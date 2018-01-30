@@ -827,3 +827,17 @@ module ``Generic Combinators`` =
     [<Fact>]
     let ``Generic fold should support generic cyclic objects`` () =
         test <@ Generic.fold (fun c _ -> c + 1) 0 Cycle.Instance = 1 @>
+
+
+module ``Generic Assert`` =
+
+    [<Fact>]
+    let ``Should fail on non-equal values`` () =
+        let mkWithValue (x:int) = (1,[1;2;3], Some(ref [|1;2;3|], set [x]))
+        raisesWith<Assert.EqualityAssertionException> <@@ Assert.deepEquals (mkWithValue 1) (mkWithValue 2) @@>
+
+    [<Fact>]
+    let ``Generic assert should support generic types``() =
+        { new IPredicate with 
+            member __.Invoke (t : 'T) = Assert.deepEquals t t ; true }
+        |> Check.GenericPredicate false false 100 10
